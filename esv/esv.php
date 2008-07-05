@@ -3,7 +3,7 @@
 Plugin Name: ESV
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.2.0
+Version: 3.2.1
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -25,7 +25,7 @@ Author URI: http://www.musterion.net/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$ESV_Version = "3.2.0";
+$ESV_Version = "3.2.1";
 $ESV_Loaded = 0;
 
 // Add to the Admin function list
@@ -465,23 +465,22 @@ if (! function_exists('esv_getVerse')) {
 			
 			$randomIdentifier = time() + rand();
 			
-			// The next few lines come directly from tippy and determine how the tooltip is to be
-			// activated
+			// The next few lines determine how the tooltip is to be activated
 			if (get_option('tippy_openTip') == "hover")
 			{
 				$activateTippy = "onMouseOver";
 				
-				if ($tippyHref != "")
-				{
-					$addHref = 'href="'. $tippyHref .'" ';
-				}
+				$addHref = 'href="http://www.gnpcb.org/esv/search/?q='. urlencode($reference) .'" ';
+				
+				$linkTitle = '';
 			} else {
 				$activateTippy = "onMouseUp";
 				$addHref = "";
+				$linkTitle = 'title="Click for verse text"';
 			}
 
 			$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'.
-			'<a title="Click for verse text" class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\');" onMouseOut="domTip_clearTip(\'false\')">'.
+			'<a '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\');" onMouseOut="domTip_clearTip(\'false\')" '. $addHref .'>'.
 			$linktext .
 			'</a>';
 		} else if ($format == "tooltip" && $doing_rss == 1) {
