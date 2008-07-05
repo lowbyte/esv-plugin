@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== ESV Plugin ===
 Contributors: Columcille
 Tags: esv, bible, scripture
 Requires at least: 2.1.5
