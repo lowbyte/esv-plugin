@@ -33,7 +33,7 @@ if (! function_exists('esv_addoptions')) {
 	function esv_addoptions() {
 
 		if (function_exists('add_options_page')) {
-			require_once(ABSPATH ."/wp-content/plugins/esv/esv_adminOptions.php");
+			require_once(ABSPATH ."/wp-content/plugins/esv-plugin/esv_adminOptions.php");
 			add_options_page('ESV Plugin Options', 'ESV', 9, basename(__FILE__), 'esv_options_subpanel');
 		}
 	}
