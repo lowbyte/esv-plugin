@@ -2,8 +2,8 @@
 Contributors: Columcille
 Tags: esv, bible, scripture
 Requires at least: 2.1.5
-Tested up to: 2.3.1
-Stable tag: 3.2.0
+Tested up to: 2.5.1
+Stable tag: 3.2.1
 
 Automatically scans WordPress posts to replace Scripture references with a link to the ESV or with the text itself.
 
@@ -15,7 +15,6 @@ The plugin is highly configurable, allowing the user to have control over severa
 
 == Installation ==
 
-Upload esv.php and the esv directory to your /wp-content/plugins/ directory
+Upload the esv directory to your /wp-content/plugins/ directory
 Activate the plugin through your dashboard
-Visit the ESV Options page under the Options section of your dashboard. This will set up all of the initial settings.
-
+Visit the ESV Options page under the Settings section of your dashboard. This will set up all of the initial settings.
