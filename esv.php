@@ -3,12 +3,12 @@
 Plugin Name: ESV
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.2.1
+Version: 3.3.0
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
 
-/*  Copyright 2007 Chris Roberts (email : columcille@gmail.com)
+/*  Copyright 2008 Chris Roberts (email : columcille@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ Author URI: http://www.musterion.net/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$ESV_Version = "3.2.1";
+$ESV_Version = "3.3.0";
 $ESV_Loaded = 0;
 
 // Add to the Admin function list
@@ -33,7 +33,7 @@ if (! function_exists('esv_addoptions')) {
 	function esv_addoptions() {
 
 		if (function_exists('add_options_page')) {
-			require_once(ABSPATH ."/wp-content/plugins/esv-plugin/esv_adminOptions.php");
+			require_once(ABSPATH ."wp-content/plugins/esv-plugin/esv_adminOptions.php");
 			add_options_page('ESV Plugin Options', 'ESV', 9, basename(__FILE__), 'esv_options_subpanel');
 		}
 	}
@@ -71,35 +71,33 @@ if (! function_exists('esv_runtime_modify')) {
 			$content = esv_verse($content);
 		}
 
-		if (get_option("esv_process_ref") == "save" || get_option("esv_parse_saved") == "true") {
-			// Find any of our formatted links. It is looking for a url with the
-			// format:
-			// <a href="urltoESV" esv_reference="scripture_ref" esv_header="on|off" esv_format="tooltip|inline|block|link">scripture_ref</a>
-			preg_match_all(
-			'/'
-			.'\<a\shref=["\'](?:.+?)["\']\s'
-			.'(?:class="bibleref"\stitle=".+?"\s)?'
-			.'esv_reference=["\'](.+?)["\']\s'
-			.'esv_header=["\']((?:on|off){1})["\']\s'
-			.'esv_format=["\']((?:tooltip|inline|block|link){1})["\']'
-			.'\>'
-			.'(.+?)'
-			.'\<\/a\>'
-			.'/', $content, $Verses);
+        // Find any of our formatted links. It is looking for a url with the
+        // format:
+        // <a href="urltoESV" esv_reference="scripture_ref" esv_header="on|off" esv_format="tooltip|inline|block|link">scripture_ref</a>
+        preg_match_all(
+        '/'
+        .'\<a\shref=["\'](?:.+?)["\']\s'
+        .'(?:class="bibleref"\stitle=".+?"\s)?'
+        .'esv_reference=["\'](.+?)["\']\s'
+        .'esv_header=["\']((?:on|off){1})["\']\s'
+        .'esv_format=["\']((?:tooltip|inline|block|link){1})["\']'
+        .'\>'
+        .'(.+?)'
+        .'\<\/a\>'
+        .'/', $content, $Verses);
 
-			for ($i = 0 ; $i < sizeof($Verses[1]) ; $i++)
-			{
-				$reference = $Verses[1][$i];
-				$header = $Verses[2][$i];
-				$format = $Verses[3][$i];
-				$linktext = $Verses[4][$i];
-				$VerseText = "";
+        for ($i = 0 ; $i < sizeof($Verses[1]) ; $i++)
+        {
+            $reference = $Verses[1][$i];
+            $header = $Verses[2][$i];
+            $format = $Verses[3][$i];
+            $linktext = $Verses[4][$i];
+            $VerseText = "";
 
-				$VerseText = esv_formatReference($reference, $header, $format, $linktext);
+            $VerseText = esv_formatReference($reference, $header, $format, $linktext);
 
-				$content = str_replace($Verses[0][$i], $VerseText, $content);
-			}
-		}
+            $content = str_replace($Verses[0][$i], $VerseText, $content);
+        }
 
 		// Check for specific tags
 		preg_match_all('/\[esvignore\](.+?)\[\/esvignore\]/', $content, $matches);
@@ -399,7 +397,7 @@ if (! function_exists('esv_getVerse')) {
 			$VerseText = stripslashes($result['Verse']);
 		} else {
 			// Build the options string based on stored options
-			$options = "include-passage-references=". get_option('esv_include_reference') ."&include-first-verse-numbers=". get_option('esv_first_verse_num') ."&include-verse-numbers=". get_option('esv_verse_num') ."&include-footnotes=". get_option('esv_footnote') ."&include-footnote-links=". get_option('esv_footnote_link') ."&include-headings=". get_option('esv_incl_headings') ."&include-subheadings=". get_option('esv_incl_subheadings') ."&include-surrounding-chapters=". get_option('esv_surround_chap') ."&include-audio-link=". get_option('esv_inc_audio') ."&audio-format=". get_option('esv_audio_fmt') ."&include-short-copyright=". get_option('esv_incl_short_copyright') ."&include-copyright=". get_option('esv_incl_copyright');
+			$options = "include-passage-references=". get_option('esv_include_reference') ."&include-first-verse-numbers=". get_option('esv_first_verse_num') ."&include-verse-numbers=". get_option('esv_verse_num') ."&include-footnotes=". get_option('esv_footnote') ."&include-footnote-links=". get_option('esv_footnote_link') ."&include-headings=". get_option('esv_incl_headings') ."&include-subheadings=". get_option('esv_incl_subheadings') ."&include-surrounding-chapters=". get_option('esv_surround_chap') ."&include-audio-link=". get_option('esv_inc_audio') ."&audio-format=". get_option('esv_audio_fmt') ."&audio-version=". get_option('esv_audio_src') ."&include-short-copyright=". get_option('esv_incl_short_copyright') ."&include-copyright=". get_option('esv_incl_copyright') ."&include-word-ids=". get_option('esv_incl_word_ids');
 			$VerseText = "";
 
 			$url = "http://www.esvapi.org/v2/rest/passageQuery?key=". $ESVKey ."&passage=". $url_reference ."&". $options;
@@ -468,19 +466,19 @@ if (! function_exists('esv_getVerse')) {
 			// The next few lines determine how the tooltip is to be activated
 			if (get_option('tippy_openTip') == "hover")
 			{
-				$activateTippy = "onMouseOver";
+				$activateTippy = "onmouseover";
 				
 				$addHref = 'href="http://www.gnpcb.org/esv/search/?q='. urlencode($reference) .'" ';
 				
 				$linkTitle = '';
 			} else {
-				$activateTippy = "onMouseUp";
+				$activateTippy = "onmouseup";
 				$addHref = "";
 				$linkTitle = 'title="Click for verse text"';
 			}
 
 			$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'.
-			'<a '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\');" onMouseOut="domTip_clearTip(\'false\')" '. $addHref .'>'.
+			'<a '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\');" onmouseout="domTip_clearTip(\'false\')" '. $addHref .'>'.
 			$linktext .
 			'</a>';
 		} else if ($format == "tooltip" && $doing_rss == 1) {
