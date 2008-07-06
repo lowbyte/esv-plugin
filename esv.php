@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: ESV
+Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
 Version: 3.3.0
