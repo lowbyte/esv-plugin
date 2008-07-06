@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.3.0
+Version: 3.3.1
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -25,7 +25,7 @@ Author URI: http://www.musterion.net/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$ESV_Version = "3.3.0";
+$ESV_Version = "3.3.1";
 $ESV_Loaded = 0;
 
 // Add to the Admin function list
@@ -104,7 +104,7 @@ if (! function_exists('esv_runtime_modify')) {
 		for ($i = 0 ; $i < sizeof($matches[1]) ; $i++)
 		{
 			$reference = trim($matches[1][$i]);
-			$linkmatch = '<cite class="bibleref" title="'. $reference .'">'. $reference .'</cite>';
+			$linkmatch = $reference;
 			$content = str_replace($matches[0][$i], $linkmatch, $content);
 		}
 
@@ -140,7 +140,7 @@ if (! function_exists('esv_runtime_modify')) {
 			for ($i = 0 ; $i < sizeof($matches[1]) ; $i++)
 			{
 				$reference = trim($matches[1][$i]);
-				$linkmatch = '<cite class="bibleref" title="'. $reference .'">'. $reference .'</cite>';
+				$linkmatch = $reference;
 				$content = str_replace($matches[0][$i], $linkmatch, $content);
 			}
 		}
@@ -329,7 +329,7 @@ if (! function_exists('esv_buildLink')) {
 				$linkhead .= ' esv_reference="'. $reference .'" esv_header="'. $header .'" esv_format="link">';
 				break;
 			case "ignore":
-				$linkhead = '<cite class="bibleref" title="'. $reference .'">'. $reference .'</cite>';
+				$linkhead = $reference;
 				$linkfoot = '';
 				break;
 			default:
@@ -370,7 +370,7 @@ if (! function_exists('esv_formatReference')) {
 				$VerseText = '<a class="bibleref" title="'. $reference .'" href="http://www.gnpcb.org/esv/search/?q='. urlencode($reference) .'">'. $linktext .'</a>';
 				break;
 			case "ignore":
-				$VerseText = '<cite class="bibleref" title="'. $reference .'">'. $reference .'</cite>';
+				$VerseText = $reference;
 				break;
 		}
 
@@ -501,9 +501,11 @@ if (! function_exists('esv_getVerse')) {
 				{
 					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: smaller;'>(". $listenLink .")</span>", $VerseText);
 				}
-			} else {
+			} else if ($format != "ignore") {
 				$VerseText = "<cite class=\"bibleref\" title=\"". $reference ."\" style=\"display: none;\">". $reference ."</cite>". $VerseText;
-			}
+			} else {
+                return $reference;
+            }
 
 			if ($format == "block")
 			{
