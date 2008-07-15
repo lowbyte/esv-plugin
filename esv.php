@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.4.2
+Version: 3.5.0
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -25,7 +25,7 @@ Author URI: http://www.musterion.net/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 	
-$ESV_Version = "3.4.2";
+$ESV_Version = "3.5.0";
 $ESV_Loaded = 0;
 
 // Add to the Admin function list
@@ -442,20 +442,36 @@ if (! function_exists('esv_getVerse')) {
 		if ($format == "tooltip" && $doing_rss != 1) {
 			$VerseText = str_replace("\n", "", $VerseText);
 			$VerseText = str_replace("\r", "", $VerseText);
-			$VerseText = strip_tags($VerseText, "<div><br><span><p>");
-			$VerseText = str_replace("(Listen)", "", $VerseText);
+			// $VerseText = strip_tags($VerseText, "<div><br><span><p>");
+			// $VerseText = str_replace("(Listen)", "", $VerseText);
 			$VerseText = str_replace("'", "&#8217;", $VerseText);
+			
+			if (get_option('esv_inc_audio') == "true")
+			{
+				// Extract the listen link if it is an <object>
+				preg_match_all('/(\<object(?:[^>]+)?\>.*\<\/object\>)/', $VerseText, $matchListens);
+				$listenLink = $matchListens[1][0];
+				
+				// Do we need to try another way?
+				if (empty($listenLink))
+				{
+					preg_match_all('/\<h2\>([^<]+)\s?(?:\<small(?:[^>]+)?\>\((.*)\)\<\/small\>)?\<\/h2\>/', $VerseText, $matchItems);
+					$listenLink = $matchItems[2][0];
+				}
+			}
 
 			preg_match('/<div class="esv">(.*?)<div class="esv-text">/i', $VerseText, $matches);
 			$VerseRef = $matches[0];
 			$VerseRef = strip_tags($VerseRef, "");
 			$VerseText = preg_replace('/<div class="esv">(.*?)<div class="esv-text">/i', '', $VerseText);
+			
+			if (get_option('esv_inc_audio') == "true" && $listenLink != "")
+			{
+				$VerseText = "<br />". $listenLink . $VerseText;
+			}
 
 			if ($header == "on")
 			{
-				// $headertext = '<a href="http://www.gnpcb.org/esv/search/?q='. $url_reference .'">'. trim($reference) .'</a>';
-				// $headertext = '<a href=\'http://www.cnn.com/\'>'. trim($reference) .'</a>';
-				
 				$headertext = trim($reference);
 			} else {
 				$headertext = "";
@@ -467,9 +483,7 @@ if (! function_exists('esv_getVerse')) {
 			if (get_option('tippy_openTip') == "hover")
 			{
 				$activateTippy = "onmouseover";
-				
 				$addHref = 'href="http://www.gnpcb.org/esv/search/?q='. urlencode($reference) .'" ';
-				
 				$linkTitle = '';
 			} else {
 				$activateTippy = "onmouseup";
@@ -481,14 +495,24 @@ if (! function_exists('esv_getVerse')) {
 			'<a '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\');" onmouseout="domTip_clearTip(\'false\')" '. $addHref .'>'.
 			$linktext .
 			'</a>';
+			
 		} else if ($format == "tooltip" && $doing_rss == 1) {
 			$ReturnText = '<cite class="bibleref" title="'. $reference .'">'. $linktext .'</cite>';
 		} else if ($format == "inline" || $format == "block") {
-			preg_match_all('/\<h2\>([^<]+)\s?(?:\<small(?:[^>]+)?\>\((.*)\)\<\/small\>)?/', $VerseText, $matchItems);
-			$VerseText = preg_replace('/\<h2\>([^<]+)\s?(?:\<small(?:[^>]+)?\>\((.*)\)\<\/small\>)?/', "<span class='esv_inline_header'></span>", $VerseText);
+			// Extract the listen link if it is an <object>
+			preg_match_all('/(\<object(?:[^>]+)?\>.*\<\/object\>)/', $VerseText, $matchListens);
+			$listenLink = $matchListens[1][0];
+			$VerseText = preg_replace('/\<object(?:[^>]+)?\>.*\<\/object\>/', '', $VerseText);
+			
+			preg_match_all('/\<h2\>([^<]+)\s?(?:\<small(?:[^>]+)?\>\((.*)\)\<\/small\>)?\<\/h2\>/', $VerseText, $matchItems);
+			$VerseText = preg_replace('/\<h2\>([^<]+)\s?(?:\<small(?:[^>]+)?\>\((.*)\)\<\/small\>)?\<\/h2\>/', "<span class='esv_inline_header'></span>", $VerseText);
 
 			$verseRef = $matchItems[1][0];
-			$listenLink = $matchItems[2][0];
+			
+			if (empty($listenLink))
+			{
+				$listenLink = $matchItems[2][0];
+			}
 
 			if ($header == "on")
 			{
@@ -499,7 +523,7 @@ if (! function_exists('esv_getVerse')) {
 
 				if (get_option('esv_inc_audio') == "true" && $listenLink != "")
 				{
-					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: smaller;'>(". $listenLink .")</span>", $VerseText);
+					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: smaller;'>". $listenLink ."</span>", $VerseText);
 				}
 			} else if ($format != "ignore") {
 				$VerseText = "<cite class=\"bibleref\" title=\"". $reference ."\" style=\"display: none;\">". $reference ."</cite>". $VerseText;
@@ -548,7 +572,7 @@ if (! function_exists('esv_activate'))
 	function esv_activate()
 	{
 		global $wpdb;
-		$ESV_Version = "3.4.2";
+		$ESV_Version = "3.5.0";
 		
 		// Set all the default options, starting with creating the table to
 		// store ESV passages.
