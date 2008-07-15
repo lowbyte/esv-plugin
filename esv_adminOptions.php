@@ -1,7 +1,7 @@
 <?php
 if (! function_exists('esv_options_subpanel')) {
 	function esv_options_subpanel() {
-		global $wpdb, $ESV_Version;
+		global $wpdb;
 
 		$table_name = $wpdb->prefix . "esv";
 
