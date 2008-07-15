@@ -1,110 +1,48 @@
 <?php
 if (! function_exists('esv_options_subpanel')) {
 	function esv_options_subpanel() {
-		global $wpdb, $table_prefix, $ESV_Version;
+		global $wpdb, $ESV_Version;
 
-		$table_name = $table_prefix . "esv";
+		$table_name = $wpdb->prefix . "esv";
 
-		// Set all the default options, starting with creating
-		// the ESV passage table
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-			esv_install_table();
-
-			if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
-  		?>
-  		<div class="updated"><p><strong>ESV database table has been created.</strong></p></div>
-  		<?php
-			} else {
-  		?>
-  		<div class="updated"><p><strong>Unknown error trying to create ESV database table!</strong></p></div>
-  		<?php
-			}
-		}
-
-		// Versions are stored as strings. Reformat them so we can compare them.
-		// Starting with version 2.0.5, internal version numbers will always have
-		// at least three numbers, even if that means version numbers like
-		// 2.1.0 or 3.0.0
-		$oldvers = str_replace(".", "", get_option('esv_version'));
-		$curvers = str_replace(".", "", $ESV_Version);
-
-		// See if a 1.x version is installed
-		if (get_option('esv_audio_fmt') != "" && $oldvers == "")
+		if (isset($_GET['action']) && !isset($_POST['info_update']))
 		{
-			$oldvers = 100;
-		}
-
-		if ($oldvers < $curvers)
-		{
-			// Is this a new install? Load default data
-			if ($oldvers == "" || $oldvers == 0)
+			if ($_GET['action'] == "esv_purgedbase")
 			{
-				update_option('esv_include_reference', 'true');
-				update_option('esv_first_verse_num', 'true');
-				update_option('esv_verse_num', 'true');
-				update_option('esv_footnote', 'false');
-				update_option('esv_footnote_link', 'false');
-				update_option('esv_incl_headings', 'false');
-				update_option('esv_incl_subheadings', 'false');
-				update_option('esv_surround_chap', 'false');
-				update_option('esv_inc_audio', 'true');
-				update_option('esv_audio_fmt', 'flash');
-				update_option('esv_incl_short_copyright', 'true');
-				update_option('esv_incl_copyright', 'false');
-				update_option('esv_ref_action', 'link');
-				update_option('esv_show_header', 'true');
-				update_option('esv_process_ref', 'runtime');
-				update_option('esv_backward_compat', 'false');
-                update_option('esv_audio_src', 'mm');
-                update_option('esv_incl_word_ids', 'false');
-            } else if ($oldvers < 330) {
-                update_option('esv_audio_src', 'mm');
-                update_option('esv_incl_word_ids', 'false');
-			} else if ($oldvers < 310) {
-				update_option('esv_process_ref', 'runtime');
-				update_option('esv_backward_compat', 'true');
-			} else if ($oldvers < 210) {
-				update_option('esv_show_header', 'true');
-			}
-
-			update_option('esv_version', $ESV_Version);
-		}
-
-		if (isset($_GET['action']) && !isset($_POST['info_update'])) {
-			if ($_GET['action'] == "esv_purgedbase") {
-				if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-      	  ?>
-	  	  <div class="updated"><p><strong>Purge Error: ESV database table not found.</strong></p></div>
-	 	  <?php
+				if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name)
+				{
+					echo '<div class="updated"><p><strong>Purge Error: ESV database table not found.</strong></p></div>';
 				} else {
 					$query = "DELETE FROM ". $table_name .";";
 					$wpdb->query($query);
-
-	  	  ?>
-     	  <div class="updated"><p><strong>Stored ESV passages have been cleared.</strong></p></div>
-	  	  <?php
+					
+					echo '<div class="updated"><p><strong>Stored ESV passages have been cleared.</strong></p></div>';
 				}
 			}
 		}
 
-		if (isset($_GET['action']) && !isset($_POST['info_update'])) {
-			if ($_GET['action'] == "esv_purgeall") {
+		if (isset($_GET['action']) && !isset($_POST['info_update']))
+		{
+			if ($_GET['action'] == "esv_purgeall")
+			{
 				if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-      	  ?>
-	  	  <div class="updated"><p><strong>Purge Error: ESV database table not found.</strong></p></div>
-	 	  <?php
+					echo '<div class="updated"><p><strong>Purge Error: ESV database table not found.</strong></p></div>';
 				} else {
 					$query = "DROP TABLE ". $table_name .";";
 					$wpdb->query($query);
 
 					$query = "DELETE FROM wp_options WHERE option_name LIKE 'esv%';";
 					$wpdb->query($query);
-
-	  	  ?>
-     	  <div class="updated"><p><strong>All ESV Plugin data have been cleared. To re-load, visit the ESV Options page again.</strong></p></div>
-	  	  <?php
+					
+					echo '<div class="updated"><p><strong>All ESV Plugin data have been cleared. To re-load, visit the ESV Options page again.</strong></p></div>';
 				}
 			}
+		}
+		
+		if ($_GET['action'] != "esv_purgeall")
+		{
+			// Check all of our settings
+			esv_activate();
 		}
 
 		if (isset($_POST['info_update'])) {
@@ -187,12 +125,10 @@ if (! function_exists('esv_options_subpanel')) {
 			update_option('esv_process_ref', $_POST['esv_process_ref']);
             update_option('esv_incl_word_ids', $_POST['esv_incl_word_ids']);
 			update_option('esv_backward_compat', $_POST['esv_backward_compat']);
-
-	      ?>
-		  <div class="updated"><p><strong>Your options have been updated.</strong></p></div>
-		  <?php
+			
+			echo '<div class="updated"><p><strong>Your options have been updated.</strong></p></div>';
 		}
-
+		
 ?>
 
 <style type="text/css">
@@ -457,24 +393,5 @@ div.clearOptions {
 
 <?php
   }
-}
-
-if (! function_exists('esv_install_table')) {
-	function esv_install_table() {
-		global $table_prefix, $wpdb;
-
-		$table_name = $table_prefix . "esv";
-
-		$sql = "CREATE TABLE ". $table_name ." (
-              Reference tinytext,
-              Verse     blob,
-              Added     datetime
-            );";
-
-		require_once(ABSPATH . 'wp-admin/upgrade-functions.php');
-		dbDelta($sql);
-
-		update_option('esv_webkey', 'IP');
-	}
 }
 ?>

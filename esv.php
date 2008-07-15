@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.3.1
+Version: 3.4.0
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -25,7 +25,7 @@ Author URI: http://www.musterion.net/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$ESV_Version = "3.3.1";
+$ESV_Version = "3.4.0";
 $ESV_Loaded = 0;
 
 // Add to the Admin function list
@@ -76,7 +76,7 @@ if (! function_exists('esv_runtime_modify')) {
         // <a href="urltoESV" esv_reference="scripture_ref" esv_header="on|off" esv_format="tooltip|inline|block|link">scripture_ref</a>
         preg_match_all(
         '/'
-        .'\<a\shref=["\'](?:.+?)["\']\s'
+        .'\<a\shref=["\'](?:[^"\']+?)["\']\s'
         .'(?:class="bibleref"\stitle=".+?"\s)?'
         .'esv_reference=["\'](.+?)["\']\s'
         .'esv_header=["\']((?:on|off){1})["\']\s'
@@ -521,10 +521,12 @@ if (! function_exists('esv_getVerse')) {
 	}
 }
 
-if (! function_exists('esv_display')) {
+if (! function_exists('esv_display'))
+{
 	$esv_setdisplay = 0;
 
-	function esv_display($content = '') {
+	function esv_display($content = '')
+	{
 		global $esv_setdisplay, $wpdb;
 
 		$wpurl = get_bloginfo('wpurl');
@@ -532,26 +534,100 @@ if (! function_exists('esv_display')) {
 		if ($esv_setdisplay == 0) {
 			$esv_setdisplay = 1;
 
-			$content .= '<link rel="stylesheet" type="text/css" href="'. $wpurl .'/wp-content/plugins/esv/esv.css" media="screen" />';
+			$content .= '<link rel="stylesheet" type="text/css" href="'. $wpurl .'/wp-content/plugins/esv-plugin/esv.css" media="screen" />';
 		}
 
 		echo $content;
-
 	}
+}
+	
+if (! function_exists('esv_activate'))
+{
+	// Check settings and see if we need to initialize the plugin or update any
+	// new options.
+	function esv_activate()
+	{
+		global $wpdb, $ESV_Version;
+
+		// Set all the default options, starting with creating the table to
+		// store ESV passages.
+		$table_name = $wpdb->prefix . "esv";
+		
+		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name)
+		{
+			$sql = "CREATE TABLE ". $table_name ." (
+			Reference tinytext,
+			Verse     blob,
+			Added     datetime
+            );";
+			
+			require_once(ABSPATH . 'wp-admin/upgrade-functions.php');
+			dbDelta($sql);
+			
+			update_option('esv_webkey', 'IP');
+			update_option('esv_version', $ESV_Version);
+			
+			update_option('esv_include_reference', 'true');
+			update_option('esv_first_verse_num', 'true');
+			update_option('esv_verse_num', 'true');
+			update_option('esv_footnote', 'false');
+			update_option('esv_footnote_link', 'false');
+			update_option('esv_incl_headings', 'false');
+			update_option('esv_incl_subheadings', 'false');
+			update_option('esv_surround_chap', 'false');
+			update_option('esv_inc_audio', 'true');
+			update_option('esv_audio_fmt', 'flash');
+			update_option('esv_incl_short_copyright', 'true');
+			update_option('esv_incl_copyright', 'false');
+			update_option('esv_ref_action', 'link');
+			update_option('esv_show_header', 'true');
+			update_option('esv_process_ref', 'runtime');
+			update_option('esv_backward_compat', 'false');
+			update_option('esv_audio_src', 'mm');
+			update_option('esv_incl_word_ids', 'false');			
+		}
+		
+		// Update check
+		
+		// Versions are stored as strings. Reformat them so we can compare them.
+		// Starting with version 2.0.5, internal version numbers will always have
+		// at least three numbers, even if that means version numbers like
+		// 2.1.0 or 3.0.0
+		$oldvers = str_replace(".", "", get_option('esv_version'));
+		$curvers = str_replace(".", "", $ESV_Version);
+		
+		// See if a 1.x version is installed
+		if (get_option('esv_audio_fmt') != "" && $oldvers == "")
+		{
+			$oldvers = 100;
+		}
+		
+		if ($oldvers < $curvers)
+		{
+			if ($oldvers < 330) {
+                update_option('esv_audio_src', 'mm');
+                update_option('esv_incl_word_ids', 'false');
+			} else if ($oldvers < 310) {
+				update_option('esv_process_ref', 'runtime');
+				update_option('esv_backward_compat', 'true');
+			} else if ($oldvers < 210) {
+				update_option('esv_show_header', 'true');
+			}
+			
+			update_option('esv_version', $ESV_Version);
+		}
+	}
+	
+	register_activation_hook(__FILE__, 'esv_activate');
 }
 
 add_action('admin_menu', 'esv_addoptions');
-
 add_action('wp_head', 'esv_display', 40);
 
-if (get_option("esv_process_ref") == "save")
+if (get_option('esv_process_ref') == 'save')
 {
 	add_action('save_post', 'esv_edit_post', 4);
 }
 
 add_filter('the_content', 'esv_runtime_modify', 4);
-
-// add_filter('comment_text', 'esv_verse', 4);
-// add_filter('comment_text', 'esv_display', 40);
-
 ?>
