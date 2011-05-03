@@ -98,11 +98,7 @@ if (! function_exists('esv_options_subpanel')) {
 				$_POST['esv_show_header'] = "false";
 			}
 
-			if ($_POST['esv_backward_compat'] == "") {
-				$_POST['esv_backward_compat'] = "false";
-			}
-            
-            if ($_POST['esv_incl_word_ids'] == "") {
+			 if ($_POST['esv_incl_word_ids'] == "") {
 				$_POST['esv_incl_word_ids'] = "false";
 			}
 
@@ -124,7 +120,6 @@ if (! function_exists('esv_options_subpanel')) {
 			update_option('esv_show_header', $_POST['esv_show_header']);
 			update_option('esv_process_ref', $_POST['esv_process_ref']);
             update_option('esv_incl_word_ids', $_POST['esv_incl_word_ids']);
-			update_option('esv_backward_compat', $_POST['esv_backward_compat']);
 			
 			echo '<div class="updated"><p><strong>Your options have been updated.</strong></p></div>';
 		}
@@ -348,18 +343,7 @@ div.clearOptions {
 		</div>
 	</div>
 
-	<span class="esvOptionLabel">Backward Compatibility</span> <span style="padding-left: 8px;">(<a target="_blank" href="http://www.musterion.net/wordpress-esv-plugin/wordpress-esv-plugin-options-33x/#backward">Help</a>)</span><br />
-	<div class="esvOptionSection">
-		<br />
-		<div class="esvOptions">
-			<input id="esv_backward_compat" name="esv_backward_compat" type="checkbox" value="true" <?php if(get_option('esv_backward_compat') == "true") echo "checked" ?> />
-				<label for="esv_backward_compat" title="Have the plugin process old tags">
-					Enable Backward Compatibility
-				</label><br />
-		</div>
-	</div>
-
-    <span class="esvOptionLabel"><a name="Settings"></a>Manage Database/Settings</span> <span style="padding-left: 8px;">(<a target="_blank" href="http://www.musterion.net/wordpress-esv-plugin/wordpress-esv-plugin-options-33x/#manage">Help</a>)</span><br />
+	<span class="esvOptionLabel"><a name="Settings"></a>Manage Database/Settings</span> <span style="padding-left: 8px;">(<a target="_blank" href="http://www.musterion.net/wordpress-esv-plugin/wordpress-esv-plugin-options-33x/#manage">Help</a>)</span><br />
 	<div class="esvOptionSection">
 		If you want to clear out all of your stored ESV passages, just click <a href="<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=esv.php&action=esv_purgedbase">clear stored passages</a>.<br /><br />
 
