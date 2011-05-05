@@ -2,7 +2,7 @@
 Contributors: Columcille
 Tags: esv, bible, scripture
 Requires at least: 2.1.5
-Tested up to: 2.5.1
+Tested up to: 3.1.2
 Stable tag: 3.6.0
 
 Automatically scans WordPress posts to replace Scripture references with a link to the ESV or with the text itself.
