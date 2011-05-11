@@ -3,12 +3,12 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.5.0
+Version: 3.6.1
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
 
-/*  Copyright 2008 Chris Roberts (email : columcille@gmail.com)
+/*  Copyright 2011 Chris Roberts (email : columcille@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ Author URI: http://www.musterion.net/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 	
-$ESV_Version = "3.5.0";
+$ESV_Version = "3.6.1";
 $ESV_Loaded = 0;
 
 // Add to the Admin function list
@@ -106,43 +106,6 @@ if (! function_exists('esv_runtime_modify')) {
 			$reference = trim($matches[1][$i]);
 			$linkmatch = $reference;
 			$content = str_replace($matches[0][$i], $linkmatch, $content);
-		}
-
-		// Are we running in backward-compat mode?
-		if (get_option("esv_backward_compat") == "true")
-		{
-			// Look for the old tags
-			preg_match_all('/\[bible\](.+?)\[\/bible\]/', $content, $matches);
-			for ($i = 0 ; $i < sizeof($matches[1]) ; $i++)
-			{
-				$reference = trim($matches[1][$i]);
-				$VerseText = esv_getVerse($reference, "tooltip", "on");
-				$content = str_replace($matches[0][$i], $VerseText, $content);
-			}
-
-			preg_match_all('/\[bibleblock\](.+?)\[\/bibleblock\]/', $content, $matches);
-			for ($i = 0 ; $i < sizeof($matches[1]) ; $i++)
-			{
-				$reference = trim($matches[1][$i]);
-				$VerseText = esv_getVerse($reference, "block", "on");
-				$content = str_replace($matches[0][$i], $VerseText, $content);
-			}
-
-			preg_match_all('/\[biblelink\](.+?)\[\/biblelink\]/', $content, $matches);
-			for ($i = 0 ; $i < sizeof($matches[1]) ; $i++)
-			{
-				$reference = trim($matches[1][$i]);
-				$VerseText = '<a class="bibleref" title="'. $reference .'" href="http://www.gnpcb.org/esv/search/?q='. urlencode($reference) .'">'. $reference .'</a>';
-				$content = str_replace($matches[0][$i], $VerseText, $content);
-			}
-
-			preg_match_all('/\[bibleignore\](.+?)\[\/bibleignore\]/', $content, $matches);
-			for ($i = 0 ; $i < sizeof($matches[1]) ; $i++)
-			{
-				$reference = trim($matches[1][$i]);
-				$linkmatch = $reference;
-				$content = str_replace($matches[0][$i], $linkmatch, $content);
-			}
 		}
 
 		return $content;
@@ -492,7 +455,7 @@ if (! function_exists('esv_getVerse')) {
 			}
 
 			$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'.
-			'<a '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\');" onmouseout="domTip_clearTip(\'false\')" '. $addHref .'>'.
+			'<a id="tippy_tip'. $randomIdentifier .'" '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\', 0, 0, \'tippy_tip'. $randomIdentifier .'\', event);" onmouseout="domTip_fadeTipOut()" '. $addHref .'>'.
 			$linktext .
 			'</a>';
 			
@@ -547,21 +510,10 @@ if (! function_exists('esv_getVerse')) {
 
 if (! function_exists('esv_display'))
 {
-	$esv_setdisplay = 0;
-
-	function esv_display($content = '')
+	function esv_display()
 	{
-		global $esv_setdisplay, $wpdb;
-
-		$wpurl = get_bloginfo('wpurl');
-
-		if ($esv_setdisplay == 0) {
-			$esv_setdisplay = 1;
-
-			$content .= '<link rel="stylesheet" type="text/css" href="'. $wpurl .'/wp-content/plugins/esv-plugin/esv.css" media="screen" />';
-		}
-
-		echo $content;
+		wp_register_style('ESV_CSS', get_bloginfo('wpurl') .'/wp-content/plugins/esv-plugin/esv.css');
+		wp_enqueue_style('ESV_CSS');
 	}
 }
 	
@@ -572,7 +524,7 @@ if (! function_exists('esv_activate'))
 	function esv_activate()
 	{
 		global $wpdb;
-		$ESV_Version = "3.5.0";
+		$ESV_Version = "3.6.1";
 		
 		// Set all the default options, starting with creating the table to
 		// store ESV passages.
@@ -607,7 +559,6 @@ if (! function_exists('esv_activate'))
 			update_option("esv_ref_action", "link");
 			update_option("esv_show_header", "true");
 			update_option("esv_process_ref", "runtime");
-			update_option("esv_backward_compat", "false");
 			update_option("esv_audio_src", "mm");
 			update_option("esv_incl_word_ids", "false");
 		}
@@ -630,11 +581,6 @@ if (! function_exists('esv_activate'))
 				update_option('esv_process_ref', 'runtime');
 			}
 			
-			if (!get_option('esv_backward_compat'))
-			{
-				update_option('esv_backward_compat', 'true');
-			}
-			
 			if (!get_option('esv_show_header'))
 			{
 				update_option('esv_show_header', 'true');
@@ -648,7 +594,7 @@ if (! function_exists('esv_activate'))
 }
 
 add_action('admin_menu', 'esv_addoptions');
-add_action('wp_head', 'esv_display', 40);
+add_action('wp_print_styles', 'esv_display', 40);
 
 if (get_option('esv_process_ref') == 'save')
 {

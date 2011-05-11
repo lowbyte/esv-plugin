@@ -3,7 +3,7 @@ Contributors: Columcille
 Tags: esv, bible, scripture
 Requires at least: 2.1.5
 Tested up to: 2.5.1
-Stable tag: 3.5.0
+Stable tag: 3.6.1
 
 Automatically scans WordPress posts to replace Scripture references with a link to the ESV or with the text itself.
 
@@ -18,3 +18,8 @@ The plugin is highly configurable, allowing the user to have control over severa
 Upload the esv directory to your /wp-content/plugins/ directory
 Activate the plugin through your dashboard
 Visit the ESV Options page under the Settings section of your dashboard. This will set up all of the initial settings.
+
+== Changelog ==
+
+= 3.6.1 =
+Updated to work with Tippy 3.4.0
