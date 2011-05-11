@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.6.0
+Version: 3.6.1
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -25,7 +25,7 @@ Author URI: http://www.musterion.net/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 	
-$ESV_Version = "3.6.0";
+$ESV_Version = "3.6.1";
 $ESV_Loaded = 0;
 
 // Add to the Admin function list
@@ -455,7 +455,7 @@ if (! function_exists('esv_getVerse')) {
 			}
 
 			$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'.
-			'<a id="tippy_tip'. $randomIdentifier .'" '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\', \'tippy_tip'. $randomIdentifier .'\', event);" onmouseout="domTip_fadeTipOut()" '. $addHref .'>'.
+			'<a id="tippy_tip'. $randomIdentifier .'" '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\', 0, 0, \'tippy_tip'. $randomIdentifier .'\', event);" onmouseout="domTip_fadeTipOut()" '. $addHref .'>'.
 			$linktext .
 			'</a>';
 			
@@ -524,7 +524,7 @@ if (! function_exists('esv_activate'))
 	function esv_activate()
 	{
 		global $wpdb;
-		$ESV_Version = "3.6.0";
+		$ESV_Version = "3.6.1";
 		
 		// Set all the default options, starting with creating the table to
 		// store ESV passages.
