@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.6.1
+Version: 3.7.0
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -24,9 +24,6 @@ Author URI: http://www.musterion.net/
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-	
-$ESV_Version = "3.6.1";
-$ESV_Loaded = 0;
 
 // Add to the Admin function list
 if (! function_exists('esv_addoptions')) {
@@ -440,25 +437,17 @@ if (! function_exists('esv_getVerse')) {
 				$headertext = "";
 			}
 			
-			$randomIdentifier = time() + rand();
+			$esvHref = 'http://www.gnpcb.org/esv/search/?q='. urlencode($reference);
 			
-			// The next few lines determine how the tooltip is to be activated
-			if (get_option('tippy_openTip') == "hover")
+			// Get a formatted Tippy link
+			if (function_exists(tippy_formatLink))
 			{
-				$activateTippy = "onmouseover";
-				$addHref = 'href="http://www.gnpcb.org/esv/search/?q='. urlencode($reference) .'" ';
-				$linkTitle = '';
+				$tippyLink = tippy_formatLink("on", $linktext, $esvHref, $VerseText, time());
+				$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'. $tippyLink;
 			} else {
-				$activateTippy = "onmouseup";
-				$addHref = "";
-				$linkTitle = 'title="Click for verse text"';
+				// Either no Tippy or it's an old version. Produce a link only.
+				$ReturnText = '<a class="bibleref" title="'. $reference .'" href="'. $esvHref .'">'. $linktext .'</a>';
 			}
-
-			$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'.
-			'<a id="tippy_tip'. $randomIdentifier .'" '. $linkTitle .' class="tippy_link" '. $activateTippy .'="domTip_toolText(\'bref'. $randomIdentifier .'\', \''. htmlentities($VerseText) .'\',  \''. $headertext .'\', \'http://www.gnpcb.org/esv/search/?q='. $url_reference .'\', 0, 0, \'tippy_tip'. $randomIdentifier .'\', event);" onmouseout="domTip_fadeTipOut()" '. $addHref .'>'.
-			$linktext .
-			'</a>';
-			
 		} else if ($format == "tooltip" && $doing_rss == 1) {
 			$ReturnText = '<cite class="bibleref" title="'. $reference .'">'. $linktext .'</cite>';
 		} else if ($format == "inline" || $format == "block") {
@@ -500,8 +489,6 @@ if (! function_exists('esv_getVerse')) {
 			} else {
 				$ReturnText = "<div class='esvblock'>". $VerseText ."</div><br />";
 			}
-
-			$ReturnText = $ReturnText;
 		}
 
 		return $ReturnText;
@@ -523,8 +510,7 @@ if (! function_exists('esv_activate'))
 	// new options.
 	function esv_activate()
 	{
-		global $wpdb;
-		$ESV_Version = "3.6.1";
+		global $wpdb, $ESV_Version;
 		
 		// Set all the default options, starting with creating the table to
 		// store ESV passages.
@@ -542,7 +528,6 @@ if (! function_exists('esv_activate'))
 			dbDelta($sql);
 			
 			update_option("esv_webkey", "IP");
-			update_option("esv_version", $ESV_Version);
 			
 			update_option("esv_include_reference", "true");
 			update_option("esv_first_verse_num", "true");
@@ -552,7 +537,7 @@ if (! function_exists('esv_activate'))
 			update_option("esv_incl_headings", "false");
 			update_option("esv_incl_subheadings", "false");
 			update_option("esv_surround_chap", "false");
-			update_option("esv_inc_audio", "true");
+			update_option("esv_inc_audio", "false");
 			update_option("esv_audio_fmt", "flash");
 			update_option("esv_incl_short_copyright", "true");
 			update_option("esv_incl_copyright", "false");
@@ -561,32 +546,6 @@ if (! function_exists('esv_activate'))
 			update_option("esv_process_ref", "runtime");
 			update_option("esv_audio_src", "mm");
 			update_option("esv_incl_word_ids", "false");
-		}
-
-		// Update check
-		if (get_option('esv_version') != $ESV_Version)
-		{
-			if (!get_option('esv_audio_src'))
-			{
-				update_option('esv_audio_src', 'mm');
-			}
-			
-			if (!get_option('esv_incl_word_ids'))
-			{
-				update_option('esv_incl_word_ids', 'false');
-			}
-			
-			if (!get_option('esv_process_ref'))
-			{
-				update_option('esv_process_ref', 'runtime');
-			}
-			
-			if (!get_option('esv_show_header'))
-			{
-				update_option('esv_show_header', 'true');
-			}
-			
-			update_option('esv_version', $ESV_Version);
 		}
 	}
 	
