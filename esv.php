@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.7.0
+Version: 3.7.1
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -63,7 +63,7 @@ if (! function_exists('esv_runtime_modify')) {
 	function esv_runtime_modify($content)
 	{
 		// Are we parsing everything at runtime?
-		if (get_option("esv_process_ref") == "runtime")
+		if (get_option('esv_process_ref', 'runtime') == "runtime")
 		{
 			$content = esv_verse($content);
 		}
@@ -111,9 +111,9 @@ if (! function_exists('esv_runtime_modify')) {
 
 if (! function_exists('esv_verse')) {
 	function esv_verse($content) {
-		$esvref = get_option('esv_ref_action');
+		$esvref = get_option('esv_ref_action', 'link');
 
-		if (get_option('esv_webkey') == "") {
+		if (get_option('esv_webkey', '') == '') {
 			return $content;
 		}
 
@@ -186,10 +186,10 @@ if (! function_exists('esv_verse')) {
 
 			if ($format == "")
 			{
-				$format = get_option("esv_ref_action");
+				$format = get_option('esv_ref_action', 'link');
 			}
 
-			if (get_option("esv_process_ref") == "save")
+			if (get_option('esv_process_ref', 'runtime') == "save")
 			{
 				$linkmatch = esv_buildLink($reference, $header, $format, $linktext);
 			} else {
@@ -231,7 +231,7 @@ if (! function_exists('esv_extract_ref')) {
 
 if (! function_exists('esv_assemble_ref')) {
 	function esv_assemble_ref($reference = '', $volume = '', $book = '', $verse = '') {
-		$esvref = get_option('esv_ref_action');
+		$esvref = get_option('esv_ref_action', 'link');
 
 		if ($volume) {
 			$volume = str_replace('III','3',$volume);
@@ -246,7 +246,7 @@ if (! function_exists('esv_assemble_ref')) {
 		$reference = $volume ." ". $book ." ". $verse;
 		$reference = trim($reference);
 
-		if (get_option("esv_process_ref") == "save")
+		if (get_option('esv_process_ref', 'runtime') == "save")
 		{
 			return esv_buildLink($reference);
 		} else {
@@ -261,7 +261,7 @@ if (! function_exists('esv_buildLink')) {
 	{
 		if ($format == "")
 		{
-			$format = get_option('esv_ref_action');
+			$format = get_option('esv_ref_action', 'link');
 		}
 
 		if ($linktext == "")
@@ -270,7 +270,7 @@ if (! function_exists('esv_buildLink')) {
 		}
 
 		$newref = "";
-		$versehref = "http://www.gnpcb.org/esv/search/?q=". urlencode($reference);
+		$versehref = esv_getScriptureLink($reference);
 		$linkhead = '<a href="'. $versehref .'" class="bibleref" title="'. $reference .'"';
 		$linkfoot = $linktext ."</a>";
 
@@ -301,13 +301,42 @@ if (! function_exists('esv_buildLink')) {
 	}
 }
 
+// Generates the Scripture link
+if (! function_exists('esv_getScriptureLink')) {
+	function esv_getScriptureLink($reference)
+	{
+		// Biblia doesn't recognize the entity for :. Change : to . Using . as separator seems
+		// to be recognized by all sites.
+		$reference = str_replace(":", ".", $reference);
+		$reference = rawurlencode($reference);
+		$scriptureLink = "";
+		
+		switch(get_option('esv_scriptureSite', 'esvonline'))
+		{
+			case "esvonline":
+				$scriptureLink = "http://www.esvbible.org/search/". $reference ."/";
+				break;
+				
+			case "biblia":
+				$scriptureLink = "http://biblia.com/bible/esv/". $reference;
+				break;
+				
+			case "biblegateway":
+				$scriptureLink = "http://www.biblegateway.com/passage/?search=". $reference ."&version=ESV";
+				break;
+		}
+		
+		return $scriptureLink;
+	}
+}
+
 // Build the parsed reference/tag to send to the visitor
 if (! function_exists('esv_formatReference')) {
 	function esv_formatReference($reference, $header="on", $format="", $linktext="")
 	{
 		if ($format == "")
 		{
-			$format = get_option('esv_ref_action');
+			$format = get_option('esv_ref_action', 'link');
 		}
 
 		if ($linktext == "")
@@ -327,7 +356,14 @@ if (! function_exists('esv_formatReference')) {
 				$VerseText = esv_getVerse($reference, "block", $header);
 				break;
 			case "link":
-				$VerseText = '<a class="bibleref" title="'. $reference .'" href="http://www.gnpcb.org/esv/search/?q='. urlencode($reference) .'">'. $linktext .'</a>';
+				if (get_option('esv_linkWindow', 'same') == 'new')
+				{
+					$esv_linkTarget = ' target="_blank"';
+				} else {
+					$esv_linkTarget = '';
+				}
+				
+				$VerseText = '<a class="bibleref" title="'. $reference .'" href="'. esv_getScriptureLink($reference) .'"'. $esv_linkTarget .'>'. $linktext .'</a>';
 				break;
 			case "ignore":
 				$VerseText = $reference;
@@ -346,7 +382,7 @@ if (! function_exists('esv_getVerse')) {
 		// use $readerr for error checking below
 		$readerr = 0;
 
-		$ESVKey = get_option('esv_webkey');
+		$ESVKey = get_option('esv_webkey', '');
 		$url_reference = urlencode($reference);
 
 		// See if we have this cached already
@@ -357,7 +393,7 @@ if (! function_exists('esv_getVerse')) {
 			$VerseText = stripslashes($result['Verse']);
 		} else {
 			// Build the options string based on stored options
-			$options = "include-passage-references=". get_option('esv_include_reference') ."&include-first-verse-numbers=". get_option('esv_first_verse_num') ."&include-verse-numbers=". get_option('esv_verse_num') ."&include-footnotes=". get_option('esv_footnote') ."&include-footnote-links=". get_option('esv_footnote_link') ."&include-headings=". get_option('esv_incl_headings') ."&include-subheadings=". get_option('esv_incl_subheadings') ."&include-surrounding-chapters=". get_option('esv_surround_chap') ."&include-audio-link=". get_option('esv_inc_audio') ."&audio-format=". get_option('esv_audio_fmt') ."&audio-version=". get_option('esv_audio_src') ."&include-short-copyright=". get_option('esv_incl_short_copyright') ."&include-copyright=". get_option('esv_incl_copyright') ."&include-word-ids=". get_option('esv_incl_word_ids');
+			$options = "include-passage-references=". get_option('esv_include_reference', 'true') ."&include-first-verse-numbers=". get_option('esv_first_verse_num', 'true') ."&include-verse-numbers=". get_option('esv_verse_num', 'true') ."&include-footnotes=". get_option('esv_footnote', 'false') ."&include-footnote-links=". get_option('esv_footnote_link', 'false') ."&include-headings=". get_option('esv_incl_headings', 'false') ."&include-subheadings=". get_option('esv_incl_subheadings', 'false') ."&include-surrounding-chapters=". get_option('esv_surround_chap', 'false') ."&include-audio-link=". get_option('esv_inc_audio', 'false') ."&audio-format=". get_option('esv_audio_fmt', 'flash') ."&audio-version=". get_option('esv_audio_src', 'mm') ."&include-short-copyright=". get_option('esv_incl_short_copyright', 'true') ."&include-copyright=". get_option('esv_incl_copyright', 'false') ."&include-word-ids=". get_option('esv_incl_word_ids', 'false');
 			$VerseText = "";
 
 			$url = "http://www.esvapi.org/v2/rest/passageQuery?key=". $ESVKey ."&passage=". $url_reference ."&". $options;
@@ -406,7 +442,7 @@ if (! function_exists('esv_getVerse')) {
 			// $VerseText = str_replace("(Listen)", "", $VerseText);
 			$VerseText = str_replace("'", "&#8217;", $VerseText);
 			
-			if (get_option('esv_inc_audio') == "true")
+			if (get_option('esv_inc_audio', 'false') == "true")
 			{
 				// Extract the listen link if it is an <object>
 				preg_match_all('/(\<object(?:[^>]+)?\>.*\<\/object\>)/', $VerseText, $matchListens);
@@ -425,7 +461,7 @@ if (! function_exists('esv_getVerse')) {
 			$VerseRef = strip_tags($VerseRef, "");
 			$VerseText = preg_replace('/<div class="esv">(.*?)<div class="esv-text">/i', '', $VerseText);
 			
-			if (get_option('esv_inc_audio') == "true" && $listenLink != "")
+			if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "")
 			{
 				$VerseText = "<br />". $listenLink . $VerseText;
 			}
@@ -437,16 +473,21 @@ if (! function_exists('esv_getVerse')) {
 				$headertext = "";
 			}
 			
-			$esvHref = 'http://www.gnpcb.org/esv/search/?q='. urlencode($reference);
-			
 			// Get a formatted Tippy link
 			if (function_exists(tippy_formatLink))
 			{
-				$tippyLink = tippy_formatLink("on", $linktext, $esvHref, $VerseText, time());
+				$tippyLink = tippy_formatLink("on", $linktext, esv_getScriptureLink($reference), $VerseText, time());
 				$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'. $tippyLink;
 			} else {
 				// Either no Tippy or it's an old version. Produce a link only.
-				$ReturnText = '<a class="bibleref" title="'. $reference .'" href="'. $esvHref .'">'. $linktext .'</a>';
+				if (get_option('esv_linkWindow', 'same') == "new")
+				{
+					$esv_linkTarget = ' target="_blank"';
+				} else {
+					$esv_linkTarget = '';
+				}
+				
+				$ReturnText = '<a class="bibleref" title="'. $reference .'" href="'. esv_getScriptureLink($reference) .'"'. $esv_linkTarget .'>'. $linktext .'</a>';
 			}
 		} else if ($format == "tooltip" && $doing_rss == 1) {
 			$ReturnText = '<cite class="bibleref" title="'. $reference .'">'. $linktext .'</cite>';
@@ -468,12 +509,19 @@ if (! function_exists('esv_getVerse')) {
 
 			if ($header == "on")
 			{
-				if (get_option('esv_include_reference') == "true")
+				if (get_option('esv_include_reference', 'true') == "true")
 				{
-					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: larger; font-weight: bold;'><a class=\"bibleref\" title=\"". $reference ."\" href=\"http://www.gnpcb.org/esv/search/?q=". $reference ."\">". $verseRef ."</a></span><span class='esv_inline_header'></span>", $VerseText);
+					if (get_option('esv_linkWindow', 'same') == "new")
+					{
+						$esv_linkTarget = ' target="_blank"';
+					} else {
+						$esv_linkTarget = '';
+					}
+					
+					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: larger; font-weight: bold;'><a class=\"bibleref\" title=\"". $reference ."\" href=\"". esv_getScriptureLink($reference) ."\"". $esv_linkTarget .">". $verseRef ."</a></span><span class='esv_inline_header'></span>", $VerseText);
 				}
 
-				if (get_option('esv_inc_audio') == "true" && $listenLink != "")
+				if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "")
 				{
 					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: smaller;'>". $listenLink ."</span>", $VerseText);
 				}
@@ -555,7 +603,7 @@ if (! function_exists('esv_activate'))
 add_action('admin_menu', 'esv_addoptions');
 add_action('wp_print_styles', 'esv_display', 40);
 
-if (get_option('esv_process_ref') == 'save')
+if (get_option('esv_process_ref', 'runtime') == 'save')
 {
 	add_action('save_post', 'esv_edit_post', 4);
 }
