@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.7.1
+Version: 3.7.2
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -476,7 +476,7 @@ if (! function_exists('esv_getVerse')) {
 			// Get a formatted Tippy link
 			if (function_exists(tippy_formatLink))
 			{
-				$tippyLink = tippy_formatLink("on", $linktext, esv_getScriptureLink($reference), $VerseText, time());
+				$tippyLink = tippy_formatLink("on", $linktext, esv_getScriptureLink($reference), $VerseText, "", time());
 				$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'. $tippyLink;
 			} else {
 				// Either no Tippy or it's an old version. Produce a link only.
