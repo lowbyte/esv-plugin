@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.8.0
+Version: 3.8.1
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -618,4 +618,6 @@ if (get_option('esv_process_ref', 'runtime') == 'save')
 }
 
 add_filter('the_content', 'esv_runtime_modify', 4);
+add_filter('comment_text', 'esv_runtime_modify', 4);
+
 ?>
