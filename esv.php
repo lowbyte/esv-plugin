@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.8.2
+Version: 3.8.3
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -215,15 +215,18 @@ if (! function_exists('esv_extract_ref')) {
 		$abbrev_regex .= '|Jb|Psa?|Pr(?:ov?)?|Eccl?|Song?|Isa|Jer|Lam|Eze|Da?n|Hos|Joe|Amo?|Oba|Jon|Mic|Nah|Hab|Zeph?|Hag|Zech?|Mal';
 		$abbrev_regex .= '|M(?:at)?t|Mr?k|Lu?k|Jh?n|Jo|Act|Rom|Cor|Gal|Eph|Col|Phi(?:l?)?|The?|Thess?|Ti?m|Tit|Phile|Heb|Ja?m|Pe?t|Ju?d|Rev';
 
+		// $book_regex = '(?:'.$book_regex.')|(?:'.$abbrev_regex.')\.?';
+		// $book_regex = '\b(?:'. $book_regex .')\b|\b(?:'. $abbrev_regex .')\b\.?';
 		$book_regex = '(?:'.$book_regex.')|(?:'.$abbrev_regex.')\.?';
 
-		$verse_substr_regex = "(?:[:.][0-9]{1,3})?(?:[-&,;]\s?[0-9]{1,3})*";
-		$verse_regex = "[0-9]{1,3}(?:". $verse_substr_regex .")+";
+		$verse_substr_regex = '(?:[:.][0-9]{1,3})?(?:[-&,;]\s?[0-9]{1,3}(?!\s?'. $book_regex .'))*';
+		$verse_regex = '[0-9]{1,3}(?:'. $verse_substr_regex .')+';
 
-		$passage_regex = '/(?:([ ;,]+))(?:('.$volume_regex.')\s)?('.$book_regex.')\s('.$verse_regex.')/ei';
-		$replacement_regex = "esv_assemble_ref('\\2','\\3','\\4','\\1')";
+		// $passage_regex = '/(?:([ ;,]+))(?:('.$volume_regex.')\s)?('.$book_regex.')\s('.$verse_regex.')/ei';
+		// $replacement_regex = "esv_assemble_ref('\\2','\\3','\\4','\\1')";
 		
-		preg_match_all($passage_regex, $text, $matcher);
+		$passage_regex = '/\b(?:('. $volume_regex .')\s?)?('. $book_regex .')\s('. $verse_regex .')/ei';
+		$replacement_regex = "esv_assemble_ref('\\1','\\2','\\3')";
 		
 		$text = preg_replace($passage_regex, $replacement_regex, $text);
 
@@ -232,7 +235,9 @@ if (! function_exists('esv_extract_ref')) {
 }
 
 if (! function_exists('esv_assemble_ref')) {
-	function esv_assemble_ref($volume = '', $book = '', $verse = '', $prepend = '') {
+	// function esv_assemble_ref($volume = '', $book = '', $verse = '', $prepend = '')
+	function esv_assemble_ref($volume = '', $book = '', $verse = '')
+	{
 		$esvref = get_option('esv_ref_action', 'link');
 
 		if ($volume) {
