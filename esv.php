@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.7.2
+Version: 3.8.2
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -206,23 +206,25 @@ if (! function_exists('esv_verse')) {
 if (! function_exists('esv_extract_ref')) {
 	function esv_extract_ref($text) {
 		$volume_regex = '1|2|3|I|II|III|1st|2nd|3rd|First|Second|Third';
-
+		
 		$book_regex  = 'Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|Samuel|Kings|Chronicles|Ezra|Nehemiah|Esther';
 		$book_regex .= '|Job|Psalms?|Proverbs?|Ecclesiastes|Songs? of Solomon|Song of Songs|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi';
 		$book_regex .= '|Mat+hew|Mark|Luke|John|Acts?|Acts of the Apostles|Romans|Corinthians|Galatians|Ephesians|Phil+ippians|Colossians|Thessalonians|Timothy|Titus|Philemon|Hebrews|James|Peter|Jude|Revelations?';
 
-		$abbrev_regex  = 'Gen|Ex|Exo|Lev|Num|Nmb|Deut?|Josh?|Judg?|Jdg|Rut|Sam|Ki?n|Chr(?:on?)?|Ezr|Neh|Est';
-		$abbrev_regex .= '|Jb|Psa?|Pr(?:ov?)?|Eccl?|Song?|Isa|Jer|Lam|Eze|Dan|Hos|Joe|Amo|Oba|Jon|Mic|Nah|Hab|Zeph?|Hag|Zech?|Mal';
-		$abbrev_regex .= '|Mat|Mr?k|Lu?k|Jh?n|Jo|Act|Rom|Cor|Gal|Eph|Col|Phi(?:l?)?|The?|Thess?|Tim|Tit|Phile|Heb|Ja?m|Pe?t|Ju?d|Rev';
+		$abbrev_regex  = 'Gen|Ex|Exo|Lev|Num|Nmb|Deut?|Dt|Josh?|Judg?|Jdg|Rut|Sam|Ki?n|Chr(?:on?)?|Ezr|Neh|Est';
+		$abbrev_regex .= '|Jb|Psa?|Pr(?:ov?)?|Eccl?|Song?|Isa|Jer|Lam|Eze|Da?n|Hos|Joe|Amo?|Oba|Jon|Mic|Nah|Hab|Zeph?|Hag|Zech?|Mal';
+		$abbrev_regex .= '|M(?:at)?t|Mr?k|Lu?k|Jh?n|Jo|Act|Rom|Cor|Gal|Eph|Col|Phi(?:l?)?|The?|Thess?|Ti?m|Tit|Phile|Heb|Ja?m|Pe?t|Ju?d|Rev';
 
 		$book_regex = '(?:'.$book_regex.')|(?:'.$abbrev_regex.')\.?';
 
 		$verse_substr_regex = "(?:[:.][0-9]{1,3})?(?:[-&,;]\s?[0-9]{1,3})*";
-		$verse_regex = "[0-9]{1,3}(?:". $verse_substr_regex ."){1,2}";
+		$verse_regex = "[0-9]{1,3}(?:". $verse_substr_regex .")+";
 
-		$passage_regex = '/(?:('.$volume_regex.')\s)?('.$book_regex.')\s('.$verse_regex.')/e';
-		$replacement_regex = "esv_assemble_ref('\\0','\\1','\\2','\\3')";
-
+		$passage_regex = '/(?:([ ;,]+))(?:('.$volume_regex.')\s)?('.$book_regex.')\s('.$verse_regex.')/ei';
+		$replacement_regex = "esv_assemble_ref('\\2','\\3','\\4','\\1')";
+		
+		preg_match_all($passage_regex, $text, $matcher);
+		
 		$text = preg_replace($passage_regex, $replacement_regex, $text);
 
 		return $text;
@@ -230,7 +232,7 @@ if (! function_exists('esv_extract_ref')) {
 }
 
 if (! function_exists('esv_assemble_ref')) {
-	function esv_assemble_ref($reference = '', $volume = '', $book = '', $verse = '') {
+	function esv_assemble_ref($volume = '', $book = '', $verse = '', $prepend = '') {
 		$esvref = get_option('esv_ref_action', 'link');
 
 		if ($volume) {
@@ -245,12 +247,21 @@ if (! function_exists('esv_assemble_ref')) {
 
 		$reference = $volume ." ". $book ." ". $verse;
 		$reference = trim($reference);
-
+		
+		// Check to make sure books requiring a volume have one.
+		$book_vol_regex = '/\b(Samuel|Kings|Chronicles|Corinthians|Thessalonians|Timothy|Peter|Sam|Ki?n|Chr(?:on?)?|Cor|The?|Thess?|Ti?m|Pe?t)\b/i';
+		if (preg_match($book_vol_regex, $book, $matches)) {
+			if (empty($volume)) {
+				// This isn't a Bible passage, return without further modifications.
+				return $prepend . $reference;
+			}
+		}
+		
 		if (get_option('esv_process_ref', 'runtime') == "save")
 		{
-			return esv_buildLink($reference);
+			return $prepend . esv_buildLink($reference);
 		} else {
-			return esv_formatReference($reference);
+			return $prepend . esv_formatReference($reference);
 		}
 	}
 }
@@ -609,4 +620,6 @@ if (get_option('esv_process_ref', 'runtime') == 'save')
 }
 
 add_filter('the_content', 'esv_runtime_modify', 4);
+add_filter('comment_text', 'esv_runtime_modify', 4);
+
 ?>
