@@ -3,7 +3,7 @@ Contributors: Columcille
 Tags: esv, bible, scripture
 Requires at least: 2.1.5
 Tested up to: 3.4.2
-Stable tag: 3.8.1
+Stable tag: 3.8.2
 
 Automatically scans WordPress posts to replace Scripture references with a link to the ESV or with the text itself.
 
@@ -20,6 +20,9 @@ Activate the plugin through your dashboard
 Visit the ESV Options page under the Settings section of your dashboard. This will set up all of the initial settings.
 
 == Changelog ==
+
+= 3.8.2 =
+* Additional improvements to Scripture matching
 
 = 3.8.1 =
 * added the comment_text filter to tag Scripture references in comments

@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.8.1
+Version: 3.8.2
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -218,11 +218,13 @@ if (! function_exists('esv_extract_ref')) {
 		$book_regex = '(?:'.$book_regex.')|(?:'.$abbrev_regex.')\.?';
 
 		$verse_substr_regex = "(?:[:.][0-9]{1,3})?(?:[-&,;]\s?[0-9]{1,3})*";
-		$verse_regex = "[0-9]{1,3}(?:". $verse_substr_regex ."){1,2}";
+		$verse_regex = "[0-9]{1,3}(?:". $verse_substr_regex .")+";
 
-		$passage_regex = '/(?:('.$volume_regex.')\s)?('.$book_regex.')\s('.$verse_regex.')/ei';
-		$replacement_regex = "esv_assemble_ref('\\0','\\1','\\2','\\3')";
-
+		$passage_regex = '/(?:([ ;,]+))(?:('.$volume_regex.')\s)?('.$book_regex.')\s('.$verse_regex.')/ei';
+		$replacement_regex = "esv_assemble_ref('\\2','\\3','\\4','\\1')";
+		
+		preg_match_all($passage_regex, $text, $matcher);
+		
 		$text = preg_replace($passage_regex, $replacement_regex, $text);
 
 		return $text;
@@ -230,7 +232,7 @@ if (! function_exists('esv_extract_ref')) {
 }
 
 if (! function_exists('esv_assemble_ref')) {
-	function esv_assemble_ref($reference = '', $volume = '', $book = '', $verse = '') {
+	function esv_assemble_ref($volume = '', $book = '', $verse = '', $prepend = '') {
 		$esvref = get_option('esv_ref_action', 'link');
 
 		if ($volume) {
@@ -251,15 +253,15 @@ if (! function_exists('esv_assemble_ref')) {
 		if (preg_match($book_vol_regex, $book, $matches)) {
 			if (empty($volume)) {
 				// This isn't a Bible passage, return without further modifications.
-				return $reference;
+				return $prepend . $reference;
 			}
 		}
 		
 		if (get_option('esv_process_ref', 'runtime') == "save")
 		{
-			return esv_buildLink($reference);
+			return $prepend . esv_buildLink($reference);
 		} else {
-			return esv_formatReference($reference);
+			return $prepend . esv_formatReference($reference);
 		}
 	}
 }
