@@ -5,12 +5,9 @@ if (! function_exists('esv_options_subpanel')) {
 
 		$table_name = $wpdb->prefix . "esv";
 
-		if (isset($_GET['action']) && !isset($_POST['info_update']))
-		{
-			if ($_GET['action'] == "esv_purgedbase")
-			{
-				if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name)
-				{
+		if (isset($_GET['action']) && !isset($_POST['info_update'])) {
+			if ($_GET['action'] == "esv_purgedbase") {
+				if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
 					echo '<div class="updated"><p><strong>Purge Error: ESV database table not found.</strong></p></div>';
 				} else {
 					$query = "DELETE FROM ". $table_name .";";
@@ -21,10 +18,8 @@ if (! function_exists('esv_options_subpanel')) {
 			}
 		}
 
-		if (isset($_GET['action']) && !isset($_POST['info_update']))
-		{
-			if ($_GET['action'] == "esv_purgeall")
-			{
+		if (isset($_GET['action']) && !isset($_POST['info_update'])) {
+			if ($_GET['action'] == "esv_purgeall") {
 				if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
 					echo '<div class="updated"><p><strong>Purge Error: ESV database table not found.</strong></p></div>';
 				} else {
@@ -34,15 +29,16 @@ if (! function_exists('esv_options_subpanel')) {
 					$query = "DELETE FROM wp_options WHERE option_name LIKE 'esv%';";
 					$wpdb->query($query);
 					
-					echo '<div class="updated"><p><strong>All ESV Plugin data have been cleared. To re-load, visit the ESV Options page again.</strong></p></div>';
+					echo '<div class="updated"><p><strong>All ESV Plugin data have been cleared. You may want to <a href="'. get_bloginfo('wpurl') .'/wp-admin/options-general.php?page=esv.php&action=esv_loadDefaults">reload defaults</a>.</strong></p></div>';
 				}
 			}
 		}
 		
-		if ($_GET['action'] != "esv_purgeall")
-		{
+		if (isset($_GET['action']) && $_GET['action'] == "esv_loadDefaults") {
 			// Check all of our settings
 			esv_activate();
+			
+			echo '<div class="updated"><p><strong>Default settings and ESV table should now be loaded.</strong></p></div>';
 		}
 
 		if (isset($_POST['info_update'])) {
@@ -329,7 +325,9 @@ div.clearOptions {
 	<div class="esvOptionSection">
 		If you want to clear out all of your stored ESV passages, just click <a href="<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=esv.php&action=esv_purgedbase">clear stored passages</a>.<br /><br />
 
-		If you want to clear all of your ESV settings and stored passages, you can <a href="<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=esv.php&action=esv_purgeall">clear all</a>. You might want to do this if you want to uninstall the plugin, or just to clear out old settings. After clearing you can re-load default settings by again visiting the ESV Options page.
+		If you want to clear all of your ESV settings and stored passages, you can <a href="<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=esv.php&action=esv_purgeall">clear all</a>. You might want to do this if you want to uninstall the plugin, or just to clear out old settings.<br /><br />
+		
+		If you clear out the old settings, you may need to <a href="<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=esv.php&action=esv_loadDefaults">reload defaults</a>.
     </div>
 
   	<input type="submit" name="info_update" value="Update Options" /><br /><br />
