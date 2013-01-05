@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.7.2
+Version: 3.8.4
 Author: Chris Roberts
 Author URI: http://www.musterion.net/
 */
@@ -27,33 +27,32 @@ Author URI: http://www.musterion.net/
 
 // Add to the Admin function list
 if (! function_exists('esv_addoptions')) {
-	function esv_addoptions() {
-
+	function esv_addoptions()
+	{
 		if (function_exists('add_options_page')) {
 			require_once(ABSPATH ."wp-content/plugins/esv-plugin/esv_adminOptions.php");
-			add_options_page('ESV Plugin Options', 'ESV', 9, basename(__FILE__), 'esv_options_subpanel');
+			add_options_page('ESV Plugin Options', 'ESV', 'manage_options', basename(__FILE__), 'esv_options_subpanel');
 		}
 	}
 }
 
 if (! function_exists('esv_edit_post')) {
-        function esv_edit_post($Post_Id)
-        {
-                global $wpdb;
-
-                $query = "SELECT post_content FROM wp_posts WHERE ID = ". $Post_Id .";";
-                $rslt = $wpdb->get_results($query);
-
-                foreach ($rslt as $result)
-                {
-                        $content = $result->post_content;
-
-                        $content = esv_verse($content);
-
-                        $query = "UPDATE wp_posts SET post_content = '". addslashes($content) ."' WHERE ID = ". $Post_Id .";";
-                        $wpdb->query($query);
-                }
-        }
+	function esv_edit_post($Post_Id)
+	{
+		global $wpdb;
+		
+		$query = "SELECT post_content FROM wp_posts WHERE ID = ". $Post_Id .";";
+		$rslt = $wpdb->get_results($query);
+		
+		foreach ($rslt as $result) {
+			$content = $result->post_content;
+			
+			$content = esv_verse($content);
+			
+			$query = "UPDATE wp_posts SET post_content = '". addslashes($content) ."' WHERE ID = ". $Post_Id .";";
+			$wpdb->query($query);
+		}
+	}
 }
 
 // esv_runtime_modify is called when the user reads a post. It modifies the
@@ -63,8 +62,7 @@ if (! function_exists('esv_runtime_modify')) {
 	function esv_runtime_modify($content)
 	{
 		// Are we parsing everything at runtime?
-		if (get_option('esv_process_ref', 'runtime') == "runtime")
-		{
+		if (get_option('esv_process_ref', 'runtime') == "runtime") {
 			$content = esv_verse($content);
 		}
 
@@ -83,8 +81,7 @@ if (! function_exists('esv_runtime_modify')) {
         .'\<\/a\>'
         .'/', $content, $Verses);
 
-        for ($i = 0 ; $i < sizeof($Verses[1]) ; $i++)
-        {
+        for ($i = 0 ; $i < sizeof($Verses[1]) ; $i++) {
             $reference = $Verses[1][$i];
             $header = $Verses[2][$i];
             $format = $Verses[3][$i];
@@ -98,8 +95,7 @@ if (! function_exists('esv_runtime_modify')) {
 
 		// Check for specific tags
 		preg_match_all('/\[esvignore\](.+?)\[\/esvignore\]/', $content, $matches);
-		for ($i = 0 ; $i < sizeof($matches[1]) ; $i++)
-		{
+		for ($i = 0 ; $i < sizeof($matches[1]) ; $i++) {
 			$reference = trim($matches[1][$i]);
 			$linkmatch = $reference;
 			$content = str_replace($matches[0][$i], $linkmatch, $content);
@@ -110,7 +106,8 @@ if (! function_exists('esv_runtime_modify')) {
 }
 
 if (! function_exists('esv_verse')) {
-	function esv_verse($content) {
+	function esv_verse($content)
+	{
 		$esvref = get_option('esv_ref_action', 'link');
 
 		if (get_option('esv_webkey', '') == '') {
@@ -147,8 +144,7 @@ if (! function_exists('esv_verse')) {
 
 		// Check for the [esvbible] tag
 		preg_match_all('/\[esvbible([^\]]+)?\]([^\[]+)\[\/esvbible\]/', $content, $matches);
-		for ($i = 0 ; $i < sizeof($matches[0]) ; $i++)
-		{
+		for ($i = 0 ; $i < sizeof($matches[0]) ; $i++) {
 			$options = $matches[1][$i];
 			$linktext = $matches[2][$i];
 
@@ -157,40 +153,33 @@ if (! function_exists('esv_verse')) {
 			$format = "";
 
 			preg_match('/reference=["\']([^"]+)["\']/', $options, $references);
-			if (is_array($references))
-			{
+			if (is_array($references)) {
 				$reference = $references[1];
 			}
 
 			preg_match('/header=["\']((?:on|off|yes|no){1})["\']/', $options, $headers);
-			if (is_array($headers))
-			{
+			if (is_array($headers)) {
 				$header = $headers[1];
 			}
 
 			preg_match('/format=["\']((?:tooltip|inline|block|link|ignore){1})["\']/', $options, $formats);
-			if (is_array($formats))
-			{
+			if (is_array($formats)) {
 				$format = $formats[1];
 			}
 
-			if ($reference == "")
-			{
+			if ($reference == "") {
 				$reference = $linktext;
 			}
 
-			if ($header == "")
-			{
+			if ($header == "") {
 				$header = "on";
 			}
 
-			if ($format == "")
-			{
+			if ($format == "") {
 				$format = get_option('esv_ref_action', 'link');
 			}
 
-			if (get_option('esv_process_ref', 'runtime') == "save")
-			{
+			if (get_option('esv_process_ref', 'runtime') == "save") {
 				$linkmatch = esv_buildLink($reference, $header, $format, $linktext);
 			} else {
 				$linkmatch = esv_formatReference($reference, $header, $format, $linktext);
@@ -204,25 +193,26 @@ if (! function_exists('esv_verse')) {
 }
 
 if (! function_exists('esv_extract_ref')) {
-	function esv_extract_ref($text) {
+	function esv_extract_ref($text)
+	{
 		$volume_regex = '1|2|3|I|II|III|1st|2nd|3rd|First|Second|Third';
-
+		
 		$book_regex  = 'Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|Samuel|Kings|Chronicles|Ezra|Nehemiah|Esther';
 		$book_regex .= '|Job|Psalms?|Proverbs?|Ecclesiastes|Songs? of Solomon|Song of Songs|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi';
 		$book_regex .= '|Mat+hew|Mark|Luke|John|Acts?|Acts of the Apostles|Romans|Corinthians|Galatians|Ephesians|Phil+ippians|Colossians|Thessalonians|Timothy|Titus|Philemon|Hebrews|James|Peter|Jude|Revelations?';
 
-		$abbrev_regex  = 'Gen|Ex|Exo|Lev|Num|Nmb|Deut?|Josh?|Judg?|Jdg|Rut|Sam|Ki?n|Chr(?:on?)?|Ezr|Neh|Est';
-		$abbrev_regex .= '|Jb|Psa?|Pr(?:ov?)?|Eccl?|Song?|Isa|Jer|Lam|Eze|Dan|Hos|Joe|Amo|Oba|Jon|Mic|Nah|Hab|Zeph?|Hag|Zech?|Mal';
-		$abbrev_regex .= '|Mat|Mr?k|Lu?k|Jh?n|Jo|Act|Rom|Cor|Gal|Eph|Col|Phi(?:l?)?|The?|Thess?|Tim|Tit|Phile|Heb|Ja?m|Pe?t|Ju?d|Rev';
+		$abbrev_regex  = 'Gen|Ex|Exo|Lev|Num|Nmb|Deut?|Dt|Josh?|Judg?|Jdg|Rut|Sam|Ki?n|Chr(?:on?)?|Ezr|Neh|Est';
+		$abbrev_regex .= '|Jb|Psa?|Pr(?:ov?)?|Eccl?|Song?|Isa|Jer|Lam|Eze|Da?n|Hos|Joe|Amo?|Oba|Jon|Mic|Nah|Hab|Zeph?|Hag|Zech?|Mal';
+		$abbrev_regex .= '|M(?:at)?t|Mr?k|Lu?k|Jh?n|Jo|Act|Rom|Cor|Gal|Eph|Col|Phi(?:l?)?|The?|Thess?|Ti?m|Tit|Phile|Heb|Ja?m|Pe?t|Ju?d|Rev';
 
 		$book_regex = '(?:'.$book_regex.')|(?:'.$abbrev_regex.')\.?';
 
-		$verse_substr_regex = "(?:[:.][0-9]{1,3})?(?:[-&,;]\s?[0-9]{1,3})*";
-		$verse_regex = "[0-9]{1,3}(?:". $verse_substr_regex ."){1,2}";
+		$verse_substr_regex = '(?:[:.][0-9]{1,3})?(?:[-&,;]\s?[0-9]{1,3}(?!\s?'. $book_regex .'))*';
+		$verse_regex = '[0-9]{1,3}(?:'. $verse_substr_regex .')+';
 
-		$passage_regex = '/(?:('.$volume_regex.')\s)?('.$book_regex.')\s('.$verse_regex.')/e';
-		$replacement_regex = "esv_assemble_ref('\\0','\\1','\\2','\\3')";
-
+		$passage_regex = '/\b(?:('. $volume_regex .')\s?)?('. $book_regex .')\s('. $verse_regex .')/ei';
+		$replacement_regex = "esv_assemble_ref('\\1','\\2','\\3')";
+		
 		$text = preg_replace($passage_regex, $replacement_regex, $text);
 
 		return $text;
@@ -230,7 +220,9 @@ if (! function_exists('esv_extract_ref')) {
 }
 
 if (! function_exists('esv_assemble_ref')) {
-	function esv_assemble_ref($reference = '', $volume = '', $book = '', $verse = '') {
+	// function esv_assemble_ref($volume = '', $book = '', $verse = '', $prepend = '')
+	function esv_assemble_ref($volume = '', $book = '', $verse = '')
+	{
 		$esvref = get_option('esv_ref_action', 'link');
 
 		if ($volume) {
@@ -245,12 +237,20 @@ if (! function_exists('esv_assemble_ref')) {
 
 		$reference = $volume ." ". $book ." ". $verse;
 		$reference = trim($reference);
-
-		if (get_option('esv_process_ref', 'runtime') == "save")
-		{
-			return esv_buildLink($reference);
+		
+		// Check to make sure books requiring a volume have one.
+		$book_vol_regex = '/\b(Samuel|Kings|Chronicles|Corinthians|Thessalonians|Timothy|Peter|Sam|Ki?n|Chr(?:on?)?|Cor|The?|Thess?|Ti?m|Pe?t)\b/i';
+		if (preg_match($book_vol_regex, $book, $matches)) {
+			if (empty($volume)) {
+				// This isn't a Bible passage, return without further modifications.
+				return $prepend . $reference;
+			}
+		}
+		
+		if (get_option('esv_process_ref', 'runtime') == "save") {
+			return $prepend . esv_buildLink($reference);
 		} else {
-			return esv_formatReference($reference);
+			return $prepend . esv_formatReference($reference);
 		}
 	}
 }
@@ -259,13 +259,11 @@ if (! function_exists('esv_buildLink')) {
 	// Builds the link used when modifying the post in the database
 	function esv_buildLink($reference, $header="on", $format="", $linktext="")
 	{
-		if ($format == "")
-		{
+		if ($format == "") {
 			$format = get_option('esv_ref_action', 'link');
 		}
 
-		if ($linktext == "")
-		{
+		if ($linktext == "") {
 			$linktext = $reference;
 		}
 
@@ -274,8 +272,7 @@ if (! function_exists('esv_buildLink')) {
 		$linkhead = '<a href="'. $versehref .'" class="bibleref" title="'. $reference .'"';
 		$linkfoot = $linktext ."</a>";
 
-		switch ($format)
-		{
+		switch ($format) {
 			case "tooltip":
 				$linkhead .= ' esv_reference="'. $reference .'" esv_header="'. $header .'" esv_format="tooltip">';
 				break;
@@ -311,8 +308,7 @@ if (! function_exists('esv_getScriptureLink')) {
 		$reference = rawurlencode($reference);
 		$scriptureLink = "";
 		
-		switch(get_option('esv_scriptureSite', 'esvonline'))
-		{
+		switch(get_option('esv_scriptureSite', 'esvonline')) {
 			case "esvonline":
 				$scriptureLink = "http://www.esvbible.org/search/". $reference ."/";
 				break;
@@ -334,18 +330,15 @@ if (! function_exists('esv_getScriptureLink')) {
 if (! function_exists('esv_formatReference')) {
 	function esv_formatReference($reference, $header="on", $format="", $linktext="")
 	{
-		if ($format == "")
-		{
+		if ($format == "") {
 			$format = get_option('esv_ref_action', 'link');
 		}
 
-		if ($linktext == "")
-		{
+		if ($linktext == "") {
 			$linktext = $reference;
 		}
 
-		switch ($format)
-		{
+		switch ($format) {
 			case "tooltip":
 				$VerseText = esv_getVerse($reference, "tooltip", $header, $linktext);
 				break;
@@ -356,8 +349,7 @@ if (! function_exists('esv_formatReference')) {
 				$VerseText = esv_getVerse($reference, "block", $header);
 				break;
 			case "link":
-				if (get_option('esv_linkWindow', 'same') == 'new')
-				{
+				if (get_option('esv_linkWindow', 'same') == 'new') {
 					$esv_linkTarget = ' target="_blank"';
 				} else {
 					$esv_linkTarget = '';
@@ -375,7 +367,8 @@ if (! function_exists('esv_formatReference')) {
 }
 
 if (! function_exists('esv_getVerse')) {
-	function esv_getVerse($reference, $format, $header, $linktext="") {
+	function esv_getVerse($reference, $format, $header, $linktext="")
+	{
 		global $wpdb, $table_prefix, $doing_rss;
 		$table_name = $table_prefix . "esv";
 
@@ -418,8 +411,7 @@ if (! function_exists('esv_getVerse')) {
 				$VerseText = "Error retrieving passage text - curl and remote fopen both seem to be disabled on your host.";
 			}
 
-			if ($readerr == 0)
-			{
+			if ($readerr == 0) {
 				if (strpos($VerseText, "ERROR: You have exceeded your quota") === false) {
 					$query = "INSERT INTO ". $table_name ." (Reference, Verse, Added) VALUES ('". $reference ."', '". addslashes($VerseText) ."', NOW());";
 					$wpdb->query($query);
@@ -429,8 +421,7 @@ if (! function_exists('esv_getVerse')) {
 			}
 		}
 
-		if ($linktext == "")
-		{
+		if ($linktext == "") {
 			$linktext = $reference;
 		}
 
@@ -442,15 +433,13 @@ if (! function_exists('esv_getVerse')) {
 			// $VerseText = str_replace("(Listen)", "", $VerseText);
 			$VerseText = str_replace("'", "&#8217;", $VerseText);
 			
-			if (get_option('esv_inc_audio', 'false') == "true")
-			{
+			if (get_option('esv_inc_audio', 'false') == "true") {
 				// Extract the listen link if it is an <object>
 				preg_match_all('/(\<object(?:[^>]+)?\>.*\<\/object\>)/', $VerseText, $matchListens);
 				$listenLink = $matchListens[1][0];
 				
 				// Do we need to try another way?
-				if (empty($listenLink))
-				{
+				if (empty($listenLink)) {
 					preg_match_all('/\<h2\>([^<]+)\s?(?:\<small(?:[^>]+)?\>\((.*)\)\<\/small\>)?\<\/h2\>/', $VerseText, $matchItems);
 					$listenLink = $matchItems[2][0];
 				}
@@ -461,27 +450,23 @@ if (! function_exists('esv_getVerse')) {
 			$VerseRef = strip_tags($VerseRef, "");
 			$VerseText = preg_replace('/<div class="esv">(.*?)<div class="esv-text">/i', '', $VerseText);
 			
-			if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "")
-			{
+			if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "") {
 				$VerseText = "<br />". $listenLink . $VerseText;
 			}
 
-			if ($header == "on")
-			{
+			if ($header == "on") {
 				$headertext = trim($reference);
 			} else {
 				$headertext = "";
 			}
 			
 			// Get a formatted Tippy link
-			if (function_exists(tippy_formatLink))
-			{
+			if (function_exists(tippy_formatLink)) {
 				$tippyLink = tippy_formatLink("on", $linktext, esv_getScriptureLink($reference), $VerseText, "", time());
 				$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'. $tippyLink;
 			} else {
 				// Either no Tippy or it's an old version. Produce a link only.
-				if (get_option('esv_linkWindow', 'same') == "new")
-				{
+				if (get_option('esv_linkWindow', 'same') == "new") {
 					$esv_linkTarget = ' target="_blank"';
 				} else {
 					$esv_linkTarget = '';
@@ -502,17 +487,13 @@ if (! function_exists('esv_getVerse')) {
 
 			$verseRef = $matchItems[1][0];
 			
-			if (empty($listenLink))
-			{
+			if (empty($listenLink)) {
 				$listenLink = $matchItems[2][0];
 			}
 
-			if ($header == "on")
-			{
-				if (get_option('esv_include_reference', 'true') == "true")
-				{
-					if (get_option('esv_linkWindow', 'same') == "new")
-					{
+			if ($header == "on") {
+				if (get_option('esv_include_reference', 'true') == "true") {
+					if (get_option('esv_linkWindow', 'same') == "new") {
 						$esv_linkTarget = ' target="_blank"';
 					} else {
 						$esv_linkTarget = '';
@@ -521,8 +502,7 @@ if (! function_exists('esv_getVerse')) {
 					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: larger; font-weight: bold;'><a class=\"bibleref\" title=\"". $reference ."\" href=\"". esv_getScriptureLink($reference) ."\"". $esv_linkTarget .">". $verseRef ."</a></span><span class='esv_inline_header'></span>", $VerseText);
 				}
 
-				if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "")
-				{
+				if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "") {
 					$VerseText = preg_replace('/\<span class=\'esv_inline_header\'\>\<\/span\>/', "<span style='font-size: smaller;'>". $listenLink ."</span>", $VerseText);
 				}
 			} else if ($format != "ignore") {
@@ -531,8 +511,7 @@ if (! function_exists('esv_getVerse')) {
                 return $reference;
             }
 
-			if ($format == "block")
-			{
+			if ($format == "block") {
 				$ReturnText = "<blockquote class=\"esvblock\">". $VerseText ."</blockquote>";
 			} else {
 				$ReturnText = "<div class='esvblock'>". $VerseText ."</div><br />";
@@ -543,8 +522,7 @@ if (! function_exists('esv_getVerse')) {
 	}
 }
 
-if (! function_exists('esv_display'))
-{
+if (! function_exists('esv_display')) {
 	function esv_display()
 	{
 		wp_register_style('ESV_CSS', get_bloginfo('wpurl') .'/wp-content/plugins/esv-plugin/esv.css');
@@ -552,27 +530,25 @@ if (! function_exists('esv_display'))
 	}
 }
 	
-if (! function_exists('esv_activate'))
-{	
+if (! function_exists('esv_activate')) {
 	// Check settings and see if we need to initialize the plugin or update any
 	// new options.
 	function esv_activate()
 	{
-		global $wpdb, $ESV_Version;
+		global $wpdb;
 		
 		// Set all the default options, starting with creating the table to
 		// store ESV passages.
 		$table_name = $wpdb->prefix . "esv";
 		
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name)
-		{
+		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
 			$sql = "CREATE TABLE ". $table_name ." (
 			Reference tinytext,
 			Verse     blob,
 			Added     datetime
             );";
 			
-			require_once(ABSPATH . 'wp-admin/upgrade-functions.php');
+			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta($sql);
 			
 			update_option("esv_webkey", "IP");
@@ -603,10 +579,11 @@ if (! function_exists('esv_activate'))
 add_action('admin_menu', 'esv_addoptions');
 add_action('wp_print_styles', 'esv_display', 40);
 
-if (get_option('esv_process_ref', 'runtime') == 'save')
-{
+if (get_option('esv_process_ref', 'runtime') == 'save') {
 	add_action('save_post', 'esv_edit_post', 4);
 }
 
 add_filter('the_content', 'esv_runtime_modify', 4);
+add_filter('comment_text', 'esv_runtime_modify', 4);
+
 ?>
