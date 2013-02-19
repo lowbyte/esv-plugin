@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: ESV Plugin
-Plugin URI: http://www.musterion.net/wordpress-esv-plugin/
+Plugin URI: http://croberts.me/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
 Version: 3.8.4
 Author: Chris Roberts
-Author URI: http://www.musterion.net/
+Author URI: http://croberts.me/
 */
 
-/*  Copyright 2011 Chris Roberts (email : columcille@gmail.com)
+/*  Copyright 2013 Chris Roberts (email : chris@dailycross.net)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
