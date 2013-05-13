@@ -3,7 +3,7 @@ Contributors: Columcille
 Tags: esv, bible, scripture
 Requires at least: 2.1.5
 Tested up to: 3.5.1
-Stable tag: 3.8.4
+Stable tag: 3.9.1
 
 Automatically scans WordPress posts to replace Scripture references with a link to the ESV or with the text itself.
 
@@ -20,6 +20,17 @@ Activate the plugin through your dashboard
 Visit the ESV Options page under the Settings section of your dashboard. This will set up all of the initial settings.
 
 == Changelog ==
+
+= 3.9.1 =
+* Fix quirk with new verse/chapter match
+* Added Settings link to plugins dashboard page
+
+= 3.9.0 =
+* ESV Plugin is now wrapped in a class
+* Switched from preg_replace to preg_replace_callback
+* Plugin now recognizes 'verse' and 'chapter' - ie: 'verse 9'. Only works if a previous text was recognized. If a post says, "John 3 describes Jesus' conversation with Nicodemus. In verse 16 we find one of the best-known passages of the Bible." verse 16 will be correctly linked to John 3:16.
+* Corrected more glitchy match conditions.
+* Increased specificity of h3 and h4 in esv.css so it won't override theme styling.
 
 = 3.8.4 =
 * Minor updates
