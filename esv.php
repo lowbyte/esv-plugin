@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://croberts.me/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.9.0
+Version: 3.9.1
 Author: Chris Roberts
 Author URI: http://croberts.me/
 */
@@ -45,6 +45,17 @@ class ESV_Plugin
 		add_filter('comment_text', array($this, 'runtime_modify'), 4);
 
 		register_activation_hook(__FILE__, array($this, 'esv_activate'));
+
+		add_filter('plugin_action_links', array($this, 'settings_link'), 10, 2);
+    }
+
+    public function settings_link($links, $file) { 
+        if ($file == 'esv-plugin/esv.php') {
+            $settings_link = '<a href="options-general.php?page=esv.php">Settings</a>'; 
+            array_push($links, $settings_link);
+        }
+        
+        return $links; 
     }
 
     public function addoptions()
@@ -262,10 +273,14 @@ class ESV_Plugin
 				$setChapter = (!empty($this->lastChapter)) ? $this->lastChapter : "1";
 
 				$reference = $this->lastBook ." ". $setChapter .":". $verse;
+			} else {
+				return $matches[0];
 			}
 		} else if (stristr($matches[0], "chapter")) {
 			if (!empty($this->lastBook)) {
 				$reference = $this->lastBook ." ". $verse;
+			} else {
+				return $matches[0];
 			}
 		} else {
 			if (!empty($volume)) {
@@ -285,6 +300,8 @@ class ESV_Plugin
 				if (strstr($range, ':') !== false) {
 					$lastRange = $range;
 					break;
+				} else {
+					$lastRange = $range;
 				}
 			}
 
