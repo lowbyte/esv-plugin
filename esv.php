@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://croberts.me/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.9.1
+Version: 3.9.2
 Author: Chris Roberts
 Author URI: http://croberts.me/
 */
@@ -47,6 +47,19 @@ class ESV_Plugin
 		register_activation_hook(__FILE__, array($this, 'esv_activate'));
 
 		add_filter('plugin_action_links', array($this, 'settings_link'), 10, 2);
+		
+		// Load Tippy
+		if (method_exists('Tippy', 'getOption')) {
+			Tippy::register_scripts();
+			Tippy::register_styles();
+
+			wp_enqueue_style('Tippy');
+			wp_enqueue_script('Tippy');
+
+			if (Tippy::getOption('dragTips')) {
+	            wp_enqueue_script('jquery-ui-draggable');
+	        }
+	    }
     }
 
     public function settings_link($links, $file) { 
@@ -508,8 +521,6 @@ class ESV_Plugin
 			}
 
 			preg_match('/<div class="esv">(.*?)<div class="esv-text">/i', $VerseText, $matches);
-			$VerseRef = $matches[0];
-			$VerseRef = strip_tags($VerseRef, "");
 			$VerseText = preg_replace('/<div class="esv">(.*?)<div class="esv-text">/i', '', $VerseText);
 			
 			if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "") {
@@ -522,20 +533,17 @@ class ESV_Plugin
 				$headertext = "";
 			}
 			
-			// Get a formatted Tippy link
-			global $tippy;
-
-	    	// Make sure $tippy is our object
-			if (is_object($tippy)) {
+			// Make sure Tippy is present before using it
+			if (method_exists('Tippy', 'getOption')) {
 				$tippyValues['header'] = 'on';
-				$tippyValues['headertext'] = tippy_format_title($reference);
-				$tippyValues['title'] = tippy_format_title($linktext);
+				$tippyValues['headertext'] = $reference;
+				$tippyValues['title'] = $linktext;
 				$tippyValues['href'] = $this->getScriptureLink($reference);
-				$tippyValues['text'] = tippy_format_text($VerseText);
+				$tippyValues['text'] = $VerseText;
 				$tippyValues['class'] = 'esv';
 				$tippyValues['item'] = 'esv';
 				
-				$tippyLink = $tippy->getLink($tippyValues);
+				$tippyLink = Tippy::getLink($tippyValues);
 				$ReturnText = '<cite class="bibleref" title="'. $reference .'" style="display: none;"></cite>'. $tippyLink;
 			} else {
 				// Either no Tippy or it's an old version. Produce a link only.
