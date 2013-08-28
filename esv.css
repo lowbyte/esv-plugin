@@ -19,7 +19,7 @@ cite.bibleref {
 }
 
 /* Taken from ESV website, probably shouldn't change anything beyond this */
-h3 {
+.esvblock h3 {
 	text-align: left;
 }
 
@@ -83,7 +83,7 @@ div.block-indent span.verse-num, div.block-indent span.woc  {
 	padding-left: 0;
 }
 
-h4 {
+.esvblock h4 {
 	font-weight: normal;
 }
 
