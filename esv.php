@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://croberts.me/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.9.2
+Version: 3.9.3
 Author: Chris Roberts
 Author URI: http://croberts.me/
 */
@@ -519,9 +519,8 @@ class ESV_Plugin
 					$listenLink = $matchItems[2][0];
 				}
 			}
-
-			preg_match('/<div class="esv">(.*?)<div class="esv-text">/i', $VerseText, $matches);
-			$VerseText = preg_replace('/<div class="esv">(.*?)<div class="esv-text">/i', '', $VerseText);
+			
+			$VerseText = preg_replace('/<div class="esv">(.*?)<div class="esv-text">(.*?)<\/div><\/div>/i', '${2}', $VerseText);
 			
 			if (get_option('esv_inc_audio', 'false') == "true" && $listenLink != "") {
 				$VerseText = "<br />". $listenLink . $VerseText;
@@ -535,7 +534,7 @@ class ESV_Plugin
 			
 			// Make sure Tippy is present before using it
 			if (method_exists('Tippy', 'getOption')) {
-				$tippyValues['header'] = 'on';
+				$tippyValues['showheader'] = true;
 				$tippyValues['headertext'] = $reference;
 				$tippyValues['title'] = $linktext;
 				$tippyValues['href'] = $this->getScriptureLink($reference);
