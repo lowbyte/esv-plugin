@@ -3,7 +3,7 @@
 Plugin Name: ESV Plugin
 Plugin URI: http://croberts.me/wordpress-esv-plugin/
 Description: Allows the user to utilize services from the ESV Web Service
-Version: 3.9.3
+Version: 3.9.4
 Author: Chris Roberts
 Author URI: http://croberts.me/
 */
@@ -47,19 +47,6 @@ class ESV_Plugin
 		register_activation_hook(__FILE__, array($this, 'esv_activate'));
 
 		add_filter('plugin_action_links', array($this, 'settings_link'), 10, 2);
-		
-		// Load Tippy
-		if (method_exists('Tippy', 'getOption')) {
-			Tippy::register_scripts();
-			Tippy::register_styles();
-
-			wp_enqueue_style('Tippy');
-			wp_enqueue_script('Tippy');
-
-			if (Tippy::getOption('dragTips')) {
-	            wp_enqueue_script('jquery-ui-draggable');
-	        }
-	    }
     }
 
     public function settings_link($links, $file) { 
